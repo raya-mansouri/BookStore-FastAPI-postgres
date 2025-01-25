@@ -3,3 +3,4 @@ psycopg2-binary
 sqlalchemy
 sqlalchemy-stubs
 alembic
+python-dotenv
