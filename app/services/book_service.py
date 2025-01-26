@@ -3,7 +3,7 @@ from fastapi import HTTPException, status
 from app.models.book import Book
 from app.models.author import Author
 from app.models.genre import Genre
-from app.schemas.book import BookCreate
+from app.schemas.book import BookCreate, BookUpdate
 
 class BookService:
     def __init__(self, db: Session):
@@ -25,7 +25,7 @@ class BookService:
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Genre with ID {book_data.genre_id} not found."
             )
-
+        
         # Validate author_ids
         invalid_author_ids = []
         for author_id in book_data.author_ids:
@@ -61,15 +61,19 @@ class BookService:
 
         return book
 
-    # def get_book(self, book_id: int) -> Book:
-    #     return self.db.query(Book).filter(Book.id == book_id).first()
+    def get_book(self, book_id: int) -> Book:
+        book = self.db.query(Book).filter(Book.id == book_id).first()
+        if book:
+            # Ensure the authors relationship is loaded
+            self.db.refresh(book)
+        return book
     
     # def get_all_books(self) -> list[Book]:
     #     return self.db.query(Book).all()
 
     # def update_book(self, book_id: int, update_data: BookUpdate) -> Book:
     #     book = self.get_book(book_id)
-    #     for key, value in update_data.dict().items():
+    #     for key, value in update_data.model_dump().items():
     #         setattr(book, key, value)
     #     self.db.commit()
     #     self.db.refresh(book)

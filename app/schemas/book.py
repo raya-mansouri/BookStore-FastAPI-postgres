@@ -1,9 +1,10 @@
 from pydantic import BaseModel, Field, field_validator
 from typing import List, Optional
 
-class BookCreate(BaseModel):
+class BookBase(BaseModel):
     """
-    Represents the data required to create a new book.
+    Base schema for book-related models.
+    Contains shared fields and validators.
     """
     title: str = Field(
         ...,
@@ -75,3 +76,63 @@ class BookCreate(BaseModel):
         if not value:
             raise ValueError("At least one author ID is required.")
         return value
+    
+    class Config:
+        from_attributes = True
+
+class BookCreate(BookBase):
+    """
+    Represents the data required to create a new book.
+    Inherits fields and validators from BookBase.
+    """
+    pass
+
+
+class BookUpdate(BookBase):
+    """
+    Represents the data that can be updated for a book.
+    All fields are optional to allow partial updates.
+    """
+    title: Optional[str] = Field(
+        None,
+        min_length=1,
+        max_length=255,
+        description="The title of the book.",
+        example="The Great Gatsby"
+    )
+    isbn: Optional[str] = Field(
+        None,
+        pattern=r"^\d{13}$",
+        description="The ISBN-13 of the book (must be exactly 13 digits and unique).",
+        example="9783161484100"
+    )
+    price: Optional[int] = Field(
+        None,
+        gt=0,
+        description="The price of the book in Toman (must be greater than 0).",
+        example=29000
+    )
+    genre_id: Optional[int] = Field(
+        None,
+        description="The ID of the genre the book belongs to.",
+        example=1
+    )
+    description: Optional[str] = Field(
+        None,
+        min_length=10,
+        max_length=1000,
+        description="A brief description of the book (optional).",
+        example="A classic novel about the American Dream."
+    )
+    units: Optional[int] = Field(
+        None,
+        ge=0,
+        description="The number of available units of the book (must be 0 or greater).",
+        example=10
+    )
+    author_ids: Optional[List[int]] = Field(
+        None,
+        min_items=1,
+        description="A list of author IDs for the book (must have at least one author).",
+        example=[1, 2]
+    )

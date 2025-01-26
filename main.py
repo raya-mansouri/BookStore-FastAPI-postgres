@@ -2,7 +2,8 @@ from fastapi import FastAPI, Depends
 from sqlalchemy.orm import Session
 from alembic import command
 from alembic.config import Config
-
+from app.api.dependency import http_exception_handler, validation_exception_handler
+from fastapi.exceptions import HTTPException, RequestValidationError
 # Import routers
 from app.api.book_api import router as book_router
 # from app.api.user_api import router as user_router
@@ -23,6 +24,10 @@ app = FastAPI(
     description="A simple CRUD system for managing books, users, customers, and reservations.",
     version="1.0.0",
 )
+
+# Register custom exception handlers
+app.add_exception_handler(HTTPException, http_exception_handler)
+app.add_exception_handler(RequestValidationError, validation_exception_handler)
 
 # Include routers
 # app.include_router(auth_router, prefix="/auth", tags=["Auth"])
