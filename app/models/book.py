@@ -17,4 +17,4 @@ class Book(Base):
     # Relationships
     genre = relationship("Genre")
     authors = relationship("Author", secondary=BookAuthor, back_populates="books")
-    reservations = relationship("Reservation", back_populates="book")
+    reservations = relationship("Reservation", back_populates="book", cascade="all, delete-orphan")

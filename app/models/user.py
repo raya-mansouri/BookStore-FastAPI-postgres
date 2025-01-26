@@ -13,7 +13,7 @@ class User(Base):
     password = Column(String(255), nullable=False)
     role = Column(Enum("admin", "customer", "author", name="user_roles"), nullable=False)
     subscription_end_time = Column(DateTime, nullable=True)
-    wallet_money_amount = Column(Integer, default=0, nullable=False)
+    # wallet_money_amount = Column(Integer, default=0, nullable=False)
     
     # Relationships
     author = relationship("Author", back_populates="user", uselist=False, cascade="all, delete-orphan")

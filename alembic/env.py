@@ -92,6 +92,7 @@ from app.models.user import User
 from app.models.author import Author
 from app.models.customer import Customer
 from app.models.book import Book
+from app.models.book_author import BookAuthor
 from app.models.reservation import Reservation
 from app.models.city import City
 from app.models.genre import Genre

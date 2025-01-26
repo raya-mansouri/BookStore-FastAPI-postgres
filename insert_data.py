@@ -15,7 +15,7 @@ from app.models.base import SessionLocal
 
 import os
 from sqlalchemy import create_engine, Column, Integer, String, ForeignKey
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import declarative_base
 from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
 
@@ -87,7 +87,7 @@ session = SessionLocal()
 # session.add_all(users)
 # session.commit()
 
-# #-------------------------------------
+#-------------------------------------
 # cities = [
 #     City(name="New York"),
 #     City(name="Los Angeles"),
@@ -135,7 +135,7 @@ session = SessionLocal()
 # session.add_all(authors)
 # session.commit()
 
-#---------------------
+# # ---------------------
 
 # genres = [
 #     Genre(name="Science Fiction"),
@@ -157,7 +157,8 @@ session = SessionLocal()
 #         genre_id=1,  # Science Fiction
 #         description="A man is stranded on Mars.",
 #         units=10,
-#         reserved_units=0
+#         reserved_units=0,
+#         authors=[authors[0], authors[4]]  # jane_smith
 #     ),
 #     Book(
 #         title="Gone Girl",
@@ -166,7 +167,8 @@ session = SessionLocal()
 #         genre_id=2,  # Mystery
 #         description="A woman goes missing.",
 #         units=8,
-#         reserved_units=0
+#         reserved_units=0,
+#         authors=[authors[1]]  # bob_builder
 #     ),
 #     Book(
 #         title="Pride and Prejudice",
@@ -175,7 +177,8 @@ session = SessionLocal()
 #         genre_id=3,  # Romance
 #         description="A classic love story.",
 #         units=15,
-#         reserved_units=0
+#         reserved_units=0,
+#         authors=[authors[2], authors[1]]  # john_doe
 #     ),
 #     Book(
 #         title="The Hobbit",
@@ -184,7 +187,8 @@ session = SessionLocal()
 #         genre_id=4,  # Fantasy
 #         description="A hobbit's adventure.",
 #         units=12,
-#         reserved_units=0
+#         reserved_units=0,
+#         authors=[authors[3]]  # alice_wonder
 #     ),
 #     Book(
 #         title="The Girl with the Dragon Tattoo",
@@ -193,98 +197,48 @@ session = SessionLocal()
 #         genre_id=5,  # Thriller
 #         description="A journalist investigates a disappearance.",
 #         units=7,
-#         reserved_units=0
+#         reserved_units=0,
+#         authors=[authors[4]]  # admin_user
 #     )
 # ]
 
+# # Add books to the session
 # session.add_all(books)
 # session.commit()
 
 # #-------------------------------
 
-# books = [
-#     Book(
-#         title="The Martian",
-#         isbn="9780804139021",
-#         price=15,
-#         genre_id=1,  # Science Fiction
-#         description="A man is stranded on Mars.",
-#         units=10,
-#         reserved_units=0
-#     ),
-#     Book(
-#         title="Gone Girl",
-#         isbn="9780307588371",
-#         price=12,
-#         genre_id=2,  # Mystery
-#         description="A woman goes missing.",
-#         units=8,
-#         reserved_units=0
-#     ),
-#     Book(
-#         title="Pride and Prejudice",
-#         isbn="9780141439518",
-#         price=10,
-#         genre_id=3,  # Romance
-#         description="A classic love story.",
-#         units=15,
-#         reserved_units=0
-#     ),
-#     Book(
-#         title="The Hobbit",
-#         isbn="9780547928227",
-#         price=20,
-#         genre_id=4,  # Fantasy
-#         description="A hobbit's adventure.",
-#         units=12,
-#         reserved_units=0
-#     ),
-#     Book(
-#         title="The Girl with the Dragon Tattoo",
-#         isbn="9780307949486",
-#         price=14,
-#         genre_id=5,  # Thriller
-#         description="A journalist investigates a disappearance.",
-#         units=7,
-#         reserved_units=0
-#     )
-# ]
-
-# session.add_all(books)
-# session.commit()
-
-# #---------------------
 
 # customers = [
 #     Customer(
 #         user_id=1,  # john_doe
 #         subscription_model="free",
 #         subscription_end_time=None,
-#         wallet_money_amount=50.00
+#         wallet_money_amount=50000
 #     ),
 #     Customer(
 #         user_id=4,  # alice_wonder
 #         subscription_model="premium",
 #         subscription_end_time=datetime(2024, 12, 31),
-#         wallet_money_amount=100.00
+#         wallet_money_amount=100000
 #     ),
 #     Customer(
 #         user_id=3,  # admin_user
 #         subscription_model="plus",
 #         subscription_end_time=datetime(2024, 6, 30),
-#         wallet_money_amount=75.00
+#         wallet_money_amount=75000
 #     ),
 #     Customer(
 #         user_id=5,  # bob_builder
 #         subscription_model="free",
 #         subscription_end_time=None,
-#         wallet_money_amount=25.00
+#         wallet_money_amount=25000
 #     ),
 #     Customer(
 #         user_id=2,  # jane_smith
 #         subscription_model="premium",
 #         subscription_end_time=datetime(2024, 12, 31),
-#         wallet_money_amount=150.00
+#         wallet_money_amount=150000
 #     )
 # ]
 
@@ -345,10 +299,10 @@ session = SessionLocal()
 # session.add_all(reservations)
 # session.commit()
 
-#-----------------------
+# #-----------------------
 
-session.close()
+# session.close()
 
-existing_users = session.query(Reservation).all()
+existing_users = session.query(Customer).all()
 for b in existing_users:
     print(b.id)
