@@ -1,6 +1,8 @@
 from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
 from .base import Base
+from .book_author import BookAuthor
+
 
 class Author(Base):
     __tablename__ = "author"
@@ -13,4 +15,4 @@ class Author(Base):
     # Relationships
     user = relationship("User", back_populates="author")
     city = relationship("City")
-    books = relationship("BookAuthor", back_populates="author")
+    books = relationship("Book", secondary=BookAuthor, back_populates="authors")

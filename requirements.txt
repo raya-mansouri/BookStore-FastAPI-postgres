@@ -4,3 +4,6 @@ sqlalchemy
 sqlalchemy-stubs
 alembic
 python-dotenv
+pydantic
+fastapi
+uvicorn
