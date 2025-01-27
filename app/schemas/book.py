@@ -136,3 +136,20 @@ class BookUpdate(BookBase):
         description="A list of author IDs for the book (must have at least one author).",
         example=[1, 2]
     )
+
+from pydantic import field_validator
+
+class BookOut(BookBase):
+    id: int
+
+    @field_validator("author_ids", mode="before")
+    def extract_author_ids(cls, value, values):
+        if isinstance(value, list):
+            return value  # If author_ids is already a list, return it
+        elif hasattr(value, "authors"):  # If value is a Book model with authors relationship
+            return [author.id for author in value.authors]  # Extract author IDs
+        else:
+            return []  # Default to an empty list
+
+    class Config:
+        from_attributes = True

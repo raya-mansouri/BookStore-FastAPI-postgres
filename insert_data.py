@@ -303,6 +303,6 @@ session = SessionLocal()
 
 # session.close()
 
-existing_users = session.query(Customer).all()
+existing_users = session.query(Book).all()
 for b in existing_users:
-    print(b.id)
+    print(b.id, b.authors)
