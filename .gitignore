@@ -203,3 +203,5 @@ archive.zip
 
 # macOS
 .DS_Store
+insert_data.py
+pgadmin/pgadmin4.db
