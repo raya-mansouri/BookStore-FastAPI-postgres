@@ -10,3 +10,5 @@ uvicorn
 passlib
 'pydantic[email]'
 'passlib[bcrypt]'
+pytz
+redis

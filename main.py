@@ -5,11 +5,11 @@ from alembic.config import Config
 from app.api.dependency import http_exception_handler, validation_exception_handler
 from fastapi.exceptions import HTTPException, RequestValidationError
 # Import routers
+from app.api.auth_api import router as auth_router
 from app.api.book_api import router as book_router
 from app.api.user_api import router as user_router
 from app.api.customer_api import router as customer_router
 # from app.api.reservation_api import router as reservation_router
-# from app.api.auth_api import router as auth_router
 # from app.api.purchase_api import router as purchase_router
 
 # Import database setup
@@ -30,7 +30,7 @@ app.add_exception_handler(HTTPException, http_exception_handler)
 app.add_exception_handler(RequestValidationError, validation_exception_handler)
 
 # Include routers
-# app.include_router(auth_router, prefix="/auth", tags=["Auth"])
+app.include_router(auth_router, prefix="/auth", tags=["Auth"])
 app.include_router(book_router, prefix="/books", tags=["Books"])
 app.include_router(user_router, prefix="/users", tags=["Users"])
 app.include_router(customer_router, prefix="/customers", tags=["Customers"])

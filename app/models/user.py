@@ -1,6 +1,9 @@
 from sqlalchemy import Column, Integer, String, Boolean, Enum, DateTime
 from sqlalchemy.orm import relationship
 from .base import Base
+from passlib.context import CryptContext
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 class User(Base):
     __tablename__ = "user"
@@ -15,6 +18,16 @@ class User(Base):
     subscription_end_time = Column(DateTime, nullable=True)
     # wallet_money_amount = Column(Integer, default=0, nullable=False)
     
+    is_active = Column(Boolean, default=True, nullable=False)
+    
     # Relationships
     author = relationship("Author", back_populates="user", uselist=False, cascade="all, delete-orphan")
     customer = relationship("Customer", back_populates="user", uselist=False, cascade="all, delete-orphan")
+
+    def set_password(self, password: str):
+        """Hashes the password and stores it in the `password` column."""
+        self.password = pwd_context.hash(password)
+
+    def verify_password(self, password: str) -> bool:
+        """Verifies the provided password against the hashed password."""
+        return pwd_context.verify(password, self.password)
