@@ -99,9 +99,10 @@ class AuthService:
         )
         try:
             payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+            id: int = payload.get("id")
             username: str = payload.get("sub")
             role: str = payload.get("role")
-            if username is None or role is None:
+            if username is None or role is None or id is None:
                 raise credentials_exception
             token_data = TokenData(username=username, role=role)
         except JWTError:

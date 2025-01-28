@@ -41,5 +41,6 @@ class Token(BaseModel):
     token_type: str
 
 class TokenData(BaseModel):
+    id: int | None = None
     username: str | None = None
     role: str | None = None

@@ -44,7 +44,7 @@ async def login_step2(otp_data: LoginStep2Request, db=Depends(get_db)):
     
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = auth_service.create_access_token(
-        data={"sub": user.username, "role": user.role},
+        data={"id": user_id, "sub": user.username, "role": user.role},
         expires_delta=access_token_expires
     )
     return {"access_token": access_token, "token_type": "bearer"}
