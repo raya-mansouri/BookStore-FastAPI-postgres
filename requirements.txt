@@ -12,3 +12,7 @@ passlib
 'passlib[bcrypt]'
 pytz
 redis
+celery
+'celery[redis]'
+'celery-beat'
+
