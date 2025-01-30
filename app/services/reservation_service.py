@@ -51,12 +51,11 @@ class ReservationService:
         daily_rate = 1000
         total_cost = self.days*daily_rate
         # Apply 100% discount if >300,000 Toman spent in 60 days
-        if self.has_paid_more_than_300k :
+        if self.has_paid_more_than_300k() :
             total_cost = 0
         # Apply 30% discount if >3 books in the last 30 days
-        if self.has_read_more_than_3_books:
+        if self.has_read_more_than_3_books():
             total_cost = int(total_cost*0.7)
-
 
         if self.customer.wallet_money_amount < total_cost:
             remaining_amount = total_cost - self.customer.wallet_money_amount
@@ -82,7 +81,7 @@ class ReservationService:
         now = datetime.now(iran_timezone)
         sixty_days_ago = now - timedelta(days=60)
         total_paid = self.db.query(func.sum(Reservation.price)).filter(
-            Reservation.customer_id == self.customer.id).having(
+            Reservation.customer_id == self.customer.id,
             Reservation.start_of_reservation >= sixty_days_ago,
             Reservation.status == "completed"
         ).scalar() or 0

@@ -12,7 +12,7 @@ class CustomerBase(BaseModel):
     user_id: int = Field(..., description="The ID of the user associated with the customer", example=1)
     subscription_model: str = Field(SubscriptionModel.free, description="Subscription model of the customer", example="free")
     subscription_end_time: Optional[datetime] = Field(None, description="End time of the subscription", example="2023-12-31T23:59:59")
-    wallet_money_amount: float = Field(0, description="Amount of money in the wallet", example=10000)
+    wallet_money_amount: int = Field(0, description="Amount of money in the wallet", example=10000)
 
 class CustomerCreate(CustomerBase):
     pass
