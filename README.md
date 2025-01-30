@@ -1,10 +1,10 @@
 # BookStore-FastAPI-Postgres
 
-A Bookstore API built with FastAPI and PostgreSQL, providing endpoints to manage books and authors.
+A Bookstore API built with FastAPI and PostgreSQL, providing endpoints to manage books and customers.
 
 ## Features
 
-- **CRUD Operations**: Create, read, update, and delete books and authors.
+- **CRUD Operations**: Create, read, update, and delete books and customers.
 - **Database Integration**: Utilizes PostgreSQL for data storage.
 - **API Documentation**: Interactive API docs available via Swagger UI.
 
@@ -12,6 +12,8 @@ A Bookstore API built with FastAPI and PostgreSQL, providing endpoints to manage
 
 - **Python 3.10+**
 - **PostgreSQL**
+- **FastAPI**
+- **Redis**
 
 ## Installation
 
@@ -41,6 +43,9 @@ Create a `.env` file in the project root with the following content:
 
 ```env
 DATABASE_URL=postgresql://<username>:<password>@<host>:<port>/<database_name>
+SECRET_KEY="your-secret-key-here"
+ALGORITHM="HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES=10080
 ```
 
 Replace `<username>`, `<password>`, `<host>`, `<port>`, and `<database_name>` with your PostgreSQL credentials and database details.
