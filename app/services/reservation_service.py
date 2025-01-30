@@ -1,6 +1,7 @@
 from fastapi import HTTPException
+from sqlalchemy import func
 from sqlalchemy.orm import Session
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import redis
 from app.schemas.reservation import QueueResponseSchema
 from app.models.book import Book
@@ -48,14 +49,22 @@ class ReservationService:
     def check_funds(self):
         daily_rate = 1000
         total_cost = self.days * daily_rate
-        # Apply 30% discount if >3 books in the last 30 days
+        
         # Apply 100% discount if >300,000 Toman spent in 60 days
+        if self.has_paid_more_than_300k :
+            total_cost = 0
+        # Apply 30% discount if >3 books in the last 30 days
+        elif self.has_read_more_than_3_books:
+            total_cost = int(total_cost*0.3)
+            
         if self.customer.wallet_money_amount < total_cost:
             raise HTTPException("Not enough balance. Please recharge.")
 
     def has_read_more_than_3_books(self) -> bool:
         # Logic to check if the customer has read more than 3 books in the last 30 days
-        thirty_days_ago = datetime.utcnow() - timedelta(days=30)
+        iran_timezone = timezone('Asia/Tehran')
+        now = datetime.now(iran_timezone)
+        thirty_days_ago = now - timedelta(days=30)
         books_read = self.db.query(Reservation).filter(
             Reservation.customer_id == self.customer.id,
             Reservation.end_of_reservation >= thirty_days_ago
@@ -64,11 +73,14 @@ class ReservationService:
     
     def has_paid_more_than_300k(self) -> bool:
         # Logic to check if the customer has paid more than 300,000 Toman in the last 60 days
-        sixty_days_ago = datetime.utcnow() - timedelta(days=60)
-        total_paid = self.db.query(Reservation).filter(
+        iran_timezone = timezone('Asia/Tehran')
+        now = datetime.now(iran_timezone)
+        sixty_days_ago = now - timedelta(days=60)
+        total_paid = self.db.query(func.sum(Reservation.price)).filter(
             Reservation.customer_id == self.customer.id,
-            Reservation.start_of_reservation >= sixty_days_ago
-        ).count() * 1000  # Assuming 1000 Toman per reservation day
+            Reservation.start_of_reservation >= sixty_days_ago,
+            Reservation.status == "completed"
+        ).scalar() or 0
         return total_paid > 300000
 
     def reserve(self):
@@ -87,12 +99,14 @@ class ReservationService:
         # Update book reserved units
         self.book.reserved_units += 1
         
+        iran_timezone = timezone('Asia/Tehran')
+        now = datetime.now(iran_timezone)
         # Create reservation
         reservation = Reservation(
             customer_id=self.customer.id,
             book_id=self.book.id,
-            start_of_reservation=datetime.utcnow(),
-            end_of_reservation=datetime.utcnow() + timedelta(days=self.days),
+            start_of_reservation=now,
+            end_of_reservation=now + timedelta(days=self.days),
             price=total_cost,
             status="active"
         )

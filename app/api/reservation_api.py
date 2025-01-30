@@ -32,9 +32,13 @@ async def reserve_book(
 # def list_reservations(user_id: int = Depends(get_current_user)):
 #     return ReservationService.get_user_reservations(user_id)
 
-# @router.delete("/reservation/{reservation_id}")
-# def cancel_reservation(reservation_id: int, user_id: int = Depends(get_current_user)):
-#     return ReservationService.cancel_reservation(user_id, reservation_id)
+@router.delete("/cancel/{reservation_id}")
+def cancel_reservation(reservation_id: int, 
+                        user_id: int = None,
+                        token: str = Depends(oauth2_scheme),
+                        db: Session = Depends(get_db)):
+    service = ReservationService(db, user_id=user_id)
+    return service.cancel_reservation(reservation_id)
 
 # @router.get("/queue/{book_id}", response_model=ReservationQueueSchema)
 # def get_reservation_queue_position(book_id: int, user_id: int = Depends(get_current_user)):
