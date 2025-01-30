@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
-from fastapi import HTTPException, status
+from fastapi import HTTPException, status, BackgroundTasks
 from typing import List, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 from app.models.customer import Customer
 from app.schemas.customer import CustomerCreate, CustomerUpdate, CustomerOut
 
@@ -21,7 +21,7 @@ class CustomerService:
         # Create the customer
         customer = Customer(
             user_id=customer_data.user_id,
-            subscription_model=customer_data.subscription_model,
+            subscription_model="free",
             subscription_end_time=customer_data.subscription_end_time,
             wallet_money_amount=customer_data.wallet_money_amount
         )
@@ -90,10 +90,14 @@ class CustomerService:
         """
         Helper method to convert a Customer model instance to a CustomerOut schema.
         """
+        iran_timezone = timezone('Asia/Tehran')
+        now = datetime.now(iran_timezone)
+        if customer.subscription_end_time >= now and customer.subscription_model != "free":
+            subscription_model = "free"
         return CustomerOut(
             id=customer.id,
             user_id=customer.user_id,
-            subscription_model=customer.subscription_model,
+            subscription_model=subscription_model,
             subscription_end_time=customer.subscription_end_time,
             wallet_money_amount=customer.wallet_money_amount
         )
