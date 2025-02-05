@@ -60,7 +60,7 @@ class ReservationService:
         if self.customer.wallet_money_amount < total_cost:
             remaining_amount = total_cost - self.customer.wallet_money_amount
             charge_wallet_url = f"/charge-wallet?amount={remaining_amount}"
-            raise HTTPException(status_code=400, detail=f"Not enough balance. Please recharge. Redirect to: {charge_wallet_url}")
+            raise HTTPException(status_code=402, detail=f"Not enough balance. Please recharge. Redirect to: {charge_wallet_url}")
             # return RedirectResponse(url=charge_wallet_url)
 
     def has_read_more_than_3_books(self) -> bool:
