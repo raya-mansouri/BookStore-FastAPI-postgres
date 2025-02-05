@@ -5,11 +5,30 @@ from typing import Dict, Any
 from app.models.book import Book
 from app.models.author import Author
 from app.models.genre import Genre
-from app.schemas.book import BookCreate, BookUpdate, BookOut
+from app.schemas.book import BookCreate, BookUpdate, BookOut, BaseModel
 
 class BookService:
     def __init__(self, db: Session):
         self.db = db
+
+
+    def _prepare_out_schema(self, db_model_instance: Any, out_schema: BaseModel) -> BaseModel:
+        """
+        Generic method to convert a SQLAlchemy model instance to a Pydantic schema.
+        Handles special cases like `author_ids` for the Book model.
+        """
+        # Convert the SQLAlchemy model instance to a dictionary
+        model_dict = db_model_instance.__dict__
+
+        # Handle special cases (e.g., author_ids for Book)
+        if isinstance(db_model_instance, Book):
+            model_dict["author_ids"] = [author.id for author in db_model_instance.authors]
+
+        # Remove SQLAlchemy-specific keys (e.g., _sa_instance_state)
+        model_dict.pop("_sa_instance_state", None)
+
+        # Convert the dictionary to the Pydantic schema
+        return out_schema.model_validate(model_dict)
 
     def create_book(self, book_data: BookCreate) -> Book:
         # Check for duplicate ISBN
@@ -61,12 +80,12 @@ class BookService:
         self.db.commit()
         self.db.refresh(book)
 
-        return self._prepare_book_out(book)
+        return self._prepare_out_schema(book, BookOut)
 
     def get_book(self, book_id: int) -> Book:
         try:
             book = self.db.query(Book).filter(Book.id == book_id).first()
-            return self._prepare_book_out(book)
+            return self._prepare_out_schema(book, BookOut)
         except:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -82,7 +101,7 @@ class BookService:
                 .limit(limit)
                 .all()
             )
-            return [self._prepare_book_out(db_book) for db_book in db_books]
+            return [self._prepare_out_schema(db_book, BookOut) for db_book in db_books]
         except Exception as e:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -134,7 +153,7 @@ class BookService:
 
             self.db.commit()
             self.db.refresh(db_book)
-            return self._prepare_book_out(db_book)
+            return self._prepare_out_schema(db_book, BookOut)
         except NoResultFound:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -211,7 +230,7 @@ class BookService:
             self.db.refresh(db_book)
 
             # Return the updated book as a BookOut schema
-            return self._prepare_book_out(db_book)
+            return self._prepare_out_schema(db_book, BookOut)
 
         except NoResultFound:
             raise HTTPException(
@@ -231,20 +250,6 @@ class BookService:
                     detail="An error occurred while updating the book.",
                 )
 
-    def _prepare_book_out(self, book: Book) -> BookOut:
-        """
-        Helper method to convert a Book model instance to a BookOut schema.
-        """
-        return BookOut(
-            id=book.id,
-            title=book.title,
-            isbn=book.isbn,
-            price=book.price,
-            genre_id=book.genre_id,
-            description=book.description,
-            units=book.units,
-            author_ids=[author.id for author in book.authors]  # Populate author_ids
-        )
     def delete_book(self, book_id: int) -> None:
         try:
             db_book = self.db.query(Book).filter(Book.id == book_id).one()
@@ -255,18 +260,3 @@ class BookService:
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Book not found.",
             )
-
-    def _prepare_book_out(self, book: Book) -> BookOut:
-        """
-        Helper method to prepare a BookOut object from a Book model instance.
-        """
-        return BookOut(
-            id=book.id,
-            title=book.title,
-            isbn=book.isbn,
-            price=book.price,
-            genre_id=book.genre_id,
-            description=book.description,
-            units=book.units,
-            author_ids=[author.id for author in book.authors]  # Populate author_ids
-        )
