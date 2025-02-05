@@ -25,80 +25,28 @@ def decode_token(token: str):
             detail="Invalid token",
         )
 
-# Permission decorator for Admin
-def admin_only(func):
-    @wraps(func)
-    async def wrapper(*args, **kwargs):
-        token = kwargs.get("token")
-        if not token:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Not authenticated",
-            )
-        token_data = decode_token(token)
-        if token_data.role != "admin":
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Only admins can access this endpoint",
-            )
-        return await func(*args, **kwargs)
-    return wrapper
+def permission_required(allowed_roles=None, allow_current_user=False):
+    def decorator(func):
+        @wraps(func)
+        async def wrapper(*args, **kwargs):
+            token = kwargs.pop("token", None)
+            if not token:
+                raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+            
+            token_data = decode_token(token)
+            kwargs["user_id"] = token_data.id
 
-# Permission decorator for Customer
-def customer_only(func):
-    @wraps(func)
-    async def wrapper(*args, **kwargs):
-        token = kwargs.get("token")
-        if not token:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Not authenticated",
-            )
-        token_data = decode_token(token)
-        if token_data.role != "customer":
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Only customers can access this endpoint",
-            )
-        return await func(*args, **kwargs)
-    return wrapper
+            if allow_current_user:
+                user_id = token_data.id
 
-# Permission decorator for Author
-def author_only(func):
-    @wraps(func)
-    async def wrapper(*args, **kwargs):
-        token = kwargs.get("token")
-        if not token:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Not authenticated",
-            )
-        token_data = decode_token(token)
-        if token_data.role != "author":
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Only authors can access this endpoint",
-            )
-        return await func(*args, **kwargs)
-    return wrapper
+            if allowed_roles and token_data.role not in allowed_roles:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Access denied"
+                )
 
-def extract_user_id(func):
-    @wraps(func)
-    async def wrapper(*args, **kwargs):
-        token = kwargs.get("token")
-        if not token:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Not authenticated",
-            )
-        token_data = decode_token(token)
-        user_id = token_data.id
-        try:
-            if token_data.id is None:
-                raise HTTPException(status_code=401, detail="Invalid token")
-        except JWTError:
-            raise HTTPException(status_code=401, detail="Could not validate credentials")
-        kwargs["user_id"] = user_id
-        return await func(*args, **kwargs)
-    return wrapper
+            return await func(*args, **kwargs)
+        return wrapper
+    return decorator
+
 

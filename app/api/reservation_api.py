@@ -3,7 +3,7 @@ from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from typing import List
 from app.dependency import get_db
-from app.permissions import extract_user_id
+from app.permissions import permission_required
 from app.schemas.reservation import *
 from app.services.auth_service import AuthService
 from app.services.reservation_service import ReservationService
@@ -15,7 +15,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 get_current_user  =AuthService.get_current_user
 
 @router.post("/reserve", response_model=ReservationResponseSchema | QueueResponseSchema, status_code=status.HTTP_201_CREATED)
-@extract_user_id
+@permission_required(allow_current_user=True)
 async def reserve_book(
     reservation_data: ReservationCreateSchema,
     user_id: int = None,
@@ -33,6 +33,7 @@ async def reserve_book(
 #     return ReservationService.get_user_reservations(user_id)
 
 @router.delete("/cancel/{reservation_id}")
+@permission_required(allow_current_user=True)
 def cancel_reservation(reservation_id: int, 
                         user_id: int = None,
                         token: str = Depends(oauth2_scheme),
