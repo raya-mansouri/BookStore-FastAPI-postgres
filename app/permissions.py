@@ -5,13 +5,12 @@ from functools import wraps
 from jose import jwt
 from jose.exceptions import JWTError
 from app.schemas.auth import TokenData
-from dotenv import load_dotenv
+from config import settings
 import os
 
-load_dotenv()
-
-SECRET_KEY = os.getenv("SECRET_KEY")
-ALGORITHM = os.getenv("ALGORITHM")
+ 
+SECRET_KEY =  settings.SECRET_KEY
+ALGORITHM =  settings.ALGORITHM
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 

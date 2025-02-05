@@ -3,7 +3,6 @@ psycopg2-binary
 sqlalchemy
 sqlalchemy-stubs
 alembic
-python-dotenv
 pydantic
 fastapi
 uvicorn
@@ -15,4 +14,4 @@ redis
 celery
 'celery[redis]'
 'celery-beat'
-
+pydantic-settings

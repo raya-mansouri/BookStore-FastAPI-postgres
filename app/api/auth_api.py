@@ -4,12 +4,11 @@ from app.schemas.auth import UserCreate, LoginStep1Request, LoginStep2Request, T
 from app.services.auth_service import AuthService
 from app.dependency import get_db
 from app.models.user import User
-from dotenv import load_dotenv
+from config import settings
 import os
 
-load_dotenv()
-
-ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")) 
+ 
+ACCESS_TOKEN_EXPIRE_MINUTES = settings.ACCESS_TOKEN_EXPIRE_MINUTES
 
 router = APIRouter()
 
