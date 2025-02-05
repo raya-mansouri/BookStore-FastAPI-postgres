@@ -8,7 +8,7 @@ from jose import JWTError, jwt
 from passlib.context import CryptContext
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from app.schemas.auth import UserCreate
+from app.schemas.auth import UserCreate, LoginStep1Request, LoginStep2Request
 from app.models.user import User
 from app.schemas.auth import TokenData
 from config import settings
@@ -95,6 +95,38 @@ class AuthService:
         if not user or not self.verify_password(password, user.password):
             return False
         return user
+    
+    async def login_step1(self, credentials: LoginStep1Request):
+        """
+        Authenticate the user and generate an OTP.
+        """
+        user = await self.authenticate_user(credentials.username, credentials.password)
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Incorrect username or password",
+            )
+        otp = self.generate_otp(user.id)
+        return {"message": "OTP sent to your registered mobile number", "otp": otp}
+
+    async def login_step2(self, otp_data: LoginStep2Request):
+        """
+        Verify the OTP and generate an access token.
+        """
+        user_id = self.verify_otp(otp_data.otp)
+        if not user_id:
+            raise HTTPException(status_code=400, detail="Invalid OTP")
+
+        user = self.db.query(User).filter(User.id == user_id).first()
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        access_token = self.create_access_token(
+            data={"id": user.id, "sub": user.username, "role": user.role},
+            expires_delta=access_token_expires
+        )
+        return {"access_token": access_token, "token_type": "bearer"}
 
     async def get_current_user(self, token: str = Depends(oauth2_scheme)):
         credentials_exception = HTTPException(
