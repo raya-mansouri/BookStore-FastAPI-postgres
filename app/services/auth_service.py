@@ -1,3 +1,4 @@
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta, timezone
 from pytz import timezone
@@ -64,11 +65,17 @@ class AuthService:
     
 
     def register_user(self, user_data: UserCreate):
-        if self.db.query(User).filter(User.username == user_data.username).first():
-            raise HTTPException(status_code=400, detail="Username already registered")
-        
-        if self.db.query(User).filter(User.email == user_data.email).first():
-            raise HTTPException(status_code=400, detail="Email already registered")
+        # Check if username or email already exists in a single query
+        existing_user = self.db.query(User).filter(
+            or_(User.username == user_data.username, User.email == user_data.email)
+        ).first()
+
+        if existing_user:
+            # Determine which field caused the conflict
+            if existing_user.username == user_data.username:
+                raise HTTPException(status_code=400, detail="Username already registered")
+            elif existing_user.email == user_data.email:
+                raise HTTPException(status_code=400, detail="Email already registered")
         
         hashed_password = self.get_password_hash(user_data.password)
         new_user = User(
