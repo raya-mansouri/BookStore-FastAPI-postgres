@@ -94,7 +94,6 @@ class BookService:
         try:
             db_books = (
                 self.db.query(Book)
-                .options(selectinload(Book.authors))  # Eagerly load the authors relationship
                 .offset(skip)
                 .limit(limit)
                 .all()
