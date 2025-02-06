@@ -116,3 +116,4 @@ class UserService:
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="User not found.",
             )
+        return {"message": "User deleted successfully", "user_id": user_id}
