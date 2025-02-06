@@ -28,6 +28,7 @@ async def upgrade_subscription(subscription_model: str,
                                 token: int = Depends(oauth2_scheme),
                                 db: Session = Depends(get_db)):
     service = PurchaseService(db)
+    print(user_id)
     return service.upgrade_subscription(user_id, subscription_model)
 
 
