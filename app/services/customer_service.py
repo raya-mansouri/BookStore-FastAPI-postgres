@@ -86,6 +86,8 @@ class CustomerService:
         self.db.delete(customer)
         self.db.commit()
 
+        return {"message": "Customer deleted successfully", "customer_id": customer_id}
+
     def _prepare_customer_out(self, customer: Customer) -> CustomerOut:
         """
         Helper method to convert a Customer model instance to a CustomerOut schema.
