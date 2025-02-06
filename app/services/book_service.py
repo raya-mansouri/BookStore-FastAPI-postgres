@@ -60,6 +60,10 @@ class BookService:
                 detail=f"Authors with IDs {invalid_author_ids} not found."
             )
 
+        # Add authors to the book (many-to-many relationship)
+        author_ids = book_data.pop("author_ids", [])  
+        authors = self.db.query(Author).filter(Author.id.in_(author_ids)).all()
+        
         # Create the book
         book = Book(
             title=book_data.title,
@@ -67,16 +71,10 @@ class BookService:
             price=book_data.price,
             genre_id=book_data.genre_id,
             description=book_data.description,
-            units=book_data.units
+            units=book_data.units,
+            author=authors
         )
         self.db.add(book)
-        self.db.commit()
-        self.db.refresh(book)
-
-        # Add authors to the book (many-to-many relationship)
-        for author_id in book_data.author_ids:
-            author = self.db.query(Author).get(author_id)
-            book.authors.append(author)
         self.db.commit()
         self.db.refresh(book)
 
@@ -142,11 +140,9 @@ class BookService:
                     )
 
                 # Update authors (many-to-many relationship)
-                db_book.authors = []
-                for author_id in update_data["author_ids"]:
-                    author = self.db.query(Author).get(author_id)
-                    db_book.authors.append(author)
-                del update_data["author_ids"]  # Remove author_ids from update_data to avoid conflict
+                author_ids = update_data.pop("author_ids", [])  
+                authors = self.db.query(Author).filter(Author.id.in_(author_ids)).all()
+                db_book.authors = authors
 
             for key, value in update_data.items():
                 setattr(db_book, key, value)
@@ -205,12 +201,9 @@ class BookService:
                         detail=f"Authors with IDs {invalid_author_ids} not found."
                     )
 
-                # Update authors (many-to-many relationship)
-                db_book.authors = []
-                for author_id in update_data["author_ids"]:
-                    author = self.db.query(Author).get(author_id)
-                    db_book.authors.append(author)
-                del update_data["author_ids"]  # Remove author_ids to avoid conflict
+                author_ids = update_data.pop("author_ids", [])  
+                authors = self.db.query(Author).filter(Author.id.in_(author_ids)).all()
+                db_book.authors = authors
 
             # Check for duplicate ISBN if isbn is being updated
             if "isbn" in update_data and update_data["isbn"] != db_book.isbn:

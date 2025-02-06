@@ -34,10 +34,9 @@ def permission_required(allowed_roles=None, allow_current_user=False):
                 raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
             
             token_data = decode_token(token)
-            kwargs["user_id"] = token_data.id
 
             if allow_current_user:
-                user_id = token_data.id
+                kwargs["user_id"] = token_data.id
 
             if allowed_roles and token_data.role not in allowed_roles:
                 raise HTTPException(
