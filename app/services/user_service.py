@@ -1,6 +1,9 @@
+from fastapi.exceptions import RequestValidationError
+from pydantic import ValidationError
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError, NoResultFound
 from fastapi import HTTPException, status
+from app.exceptions import InternalServerError, UserAlreadyExists, UserNotFound
 from app.models.user import User  
 from app.schemas.user import UserCreate, UserUpdate, UserOut  
 from .utils import hash_password, verify_password  
@@ -20,24 +23,16 @@ class UserService:
             self.db.add(db_user)
             self.db.commit()
             self.db.refresh(db_user)
-            return UserOut.model_validate(db_user)
         except IntegrityError as e:
             self.db.rollback()
             if "username" in str(e):
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Username already exists.",
-                )
+                raise UserAlreadyExists("username")
             elif "email" in str(e):
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Email already exists.",
-                )
+                raise UserAlreadyExists("email")
             else:
-                raise HTTPException(
-                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    detail="An error occurred while creating the user.",
-                )
+                raise InternalServerError("An error occurred while creating the user.")
+        except Exception as e:
+            raise InternalServerError(str(e))
 
     def get_user_by_id(self, user_id: int) -> UserOut:
         """
@@ -47,10 +42,9 @@ class UserService:
             db_user = self.db.query(User).filter(User.id == user_id).one()
             return UserOut.model_validate(db_user)
         except NoResultFound:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="User not found.",
-            )
+            raise UserNotFound()
+        except Exception as e:
+            raise InternalServerError(str(e))
 
     def get_all_users(self) -> list[UserOut]:
         """
@@ -60,10 +54,7 @@ class UserService:
             db_users = self.db.query(User).all()
             return [UserOut.model_validate(db_user) for db_user in db_users]
         except Exception as e:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"An error occurred while retrieving users: {str(e)}",
-            )
+            raise InternalServerError(str(e))
         
     def update_user(self, user_id: int, user: UserUpdate) -> UserOut:
         """
@@ -81,27 +72,17 @@ class UserService:
             self.db.refresh(db_user)
             return UserOut.model_validate(db_user)
         except NoResultFound:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="User not found.",
-            )
+            raise UserNotFound()
         except IntegrityError as e:
             self.db.rollback()
             if "username" in str(e):
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Username already exists.",
-                )
+                raise UserAlreadyExists("username")
             elif "email" in str(e):
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Email already exists.",
-                )
+                raise UserAlreadyExists("email")
             else:
-                raise HTTPException(
-                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    detail="An error occurred while updating the user.",
-                )
+                raise InternalServerError("An error occurred while updating the user.")
+        except Exception as e:
+            raise InternalServerError(str(e))
 
     def delete_user(self, user_id: int) -> None:
         """
@@ -111,9 +92,8 @@ class UserService:
             db_user = self.db.query(User).filter(User.id == user_id).one()
             self.db.delete(db_user)
             self.db.commit()
+            return {"message": "User deleted successfully", "user_id": user_id}
         except NoResultFound:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="User not found.",
-            )
-        return {"message": "User deleted successfully", "user_id": user_id}
+            raise UserNotFound()
+        except Exception as e:
+            raise InternalServerError(str(e))
