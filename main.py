@@ -18,6 +18,8 @@ from app.models.base import Base, engine, SessionLocal
 # Import services (if needed for dependencies)
 # from app.services.auth_service import get_current_user
 
+import app.events
+
 # Initialize FastAPI app
 app = FastAPI(
     title="Book Store API",

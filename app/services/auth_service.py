@@ -87,6 +87,7 @@ class AuthService:
             is_active=True
         )
         self.db.add(new_user)
+        self.db.flush() 
         self.db.commit()
         return {"message": "User created successfully"}
 
